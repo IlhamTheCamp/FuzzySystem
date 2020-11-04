@@ -43,7 +43,7 @@ plot.plot(h, y1, label="Penghasilan Rendah")
 plot.plot(h, y2, label="Penghasilan Sedang")
 plot.plot(h, y3, label="Penghasilan Tinggi")
 plot.legend()
-plot.show()
+# plot.show()
 
 # Pengeluaran
 k = [0, 3.5, 5, 7, 8.5, 11]
@@ -83,7 +83,7 @@ plot.plot(h, y1, label="Pengeluaran Rendah")
 plot.plot(h, y2, label="Pengeluaran Sedang")
 plot.plot(h, y3, label="Pengeluaran Tinggi")
 plot.legend()
-plot.show()
+# plot.show()
 
 #Inferensi Rules
 def basedRules(hasil, keluar, id):
@@ -108,8 +108,25 @@ def basedRules(hasil, keluar, id):
     if (litHasil[2] == "Tinggi") and (litKeluar[1] == "Sedang"):
         inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][2])])
     if (litHasil[2] == "Tinggi") and (litKeluar[2] == "Tinggi"):
-        inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][3])])
+        inferensi.append(["Mungkin", (hasil[id][3]) and (keluar[id][3])])
     return inferensi
+
+def defuzzification(inferensi):
+    a = ((10+20+30) * inferensi[0]) + ((40+50+60) * inferensi[1]) + ((70+80+90+100) * inferensi[2])
+    b = (3*inferensi[0]) + (3*inferensi[1]) + (4*inferensi[2])
+    return a / b
+
+#Plot Kelayakan Model Mamdani
+x = [0,30,40,60,70,100]
+y1 = [1,1,0,0,0,0]
+y2 = [0,0,1,1,0,0]
+y3 = [0,0,0,0,1,1]
+
+plot.plot(x,y1,label="Tidak")
+plot.plot(x,y2,label="Mungkin")
+plot.plot(x,y3,label="Iya")
+plot.legend()
+# plot.show()
 
 #Main Program
 nilaiPenghasilan = []
@@ -137,32 +154,35 @@ for i in range(len(excel)):
 defuzzy = []
 for i in range(len(excel)):
     temp = basedRules(nilaiPenghasilan, nilaiPengeluaran, i)
-    inferensi = iya = mungkin = tidak = []
+    inferensi = []
+    iya = []
+    mungkin = []
+    tidak = []
     for k in range(len(temp)):
         if (temp[k][0] == "Iya"):
             iya.append(temp[k][1])
-        if (te)
+        if (temp[k][0] == "Mungkin"):
+            mungkin.append(temp[k][1])
+        if (temp[k][0] == "Tidak"):
+            tidak.append(temp[k][1])
+    inferensi.append(tidak[0] or tidak[1] or tidak[2])
+    inferensi.append(mungkin[0] or mungkin[1] or mungkin[2])
+    inferensi.append(iya[0] or iya[1] or iya[2])
+    defuzzy.append([defuzzification(inferensi), i+1])
 
-# penghasilan = 7.84
-# print("Rendah : ", penghasilanRendah(penghasilan))
-# print("Sedang : ", penghasilanSedang(penghasilan))
-# print("Tinggi : ", penghasilanTinggi(penghasilan))
-#
-# pengeluaran = 4.89
-# print("Rendah : ", pengeluaranRendah(pengeluaran))
-# print("Sedang : ", pengeluaranSedang(pengeluaran))
-# print("Tinggi : ", pengeluaranTinggi(pengeluaran))
+defuzzy.sort(reverse=True)
+layak = []
+for i in range (20):
+    layak.append(defuzzy[i][1])
 
 # Buat file output
-# workbook = xlsxwriter.Workbook('Bantuan.xls')
-# worksheet = workbook.add_worksheet()
-#
-# row = 0
-# column = 0
-#
-# content = [11,2,4,1,4,6,5,5,3,53]
-#
-# for item in content :
-#     worksheet.write(row, column, item)
-#     row += 1
-# workbook.close()
+workbook = xlsxwriter.Workbook('Bantuan.xls')
+worksheet = workbook.add_worksheet()
+
+row = 0
+column = 0
+
+for item in layak :
+    worksheet.write(row, column, item)
+    row += 1
+workbook.close()
