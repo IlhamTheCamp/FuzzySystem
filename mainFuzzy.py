@@ -3,10 +3,9 @@ import pandas as pd
 import xlsxwriter
 
 #Baca file Excel
-# excel = pd.read_excel('Mahasiswa.xls')
+excel = pd.read_excel('Mahasiswa.xls')
 
 # Penghasilan
-
 h = [0, 5.5, 8, 13, 15.5, 22]
 
 def penghasilanRendah(x):
@@ -47,7 +46,6 @@ plot.legend()
 plot.show()
 
 # Pengeluaran
-
 k = [0, 3.5, 5, 7, 8.5, 11]
 
 def pengeluaranRendah(x):
@@ -87,7 +85,64 @@ plot.plot(h, y3, label="Pengeluaran Tinggi")
 plot.legend()
 plot.show()
 
+#Inferensi Rules
+def basedRules(hasil, keluar, id):
+    literasi = ["Rendah", "Sedang", "Tinggi"]
+    litHasil = literasi
+    litKeluar = literasi
+    inferensi = []
+    if (litHasil[0] == "Rendah") and (litKeluar[0] == "Rendah"):
+        inferensi.append(["Mungkin", (hasil[id][1] and keluar[id][1])])
+    if (litHasil[0] == "Rendah") and (litKeluar[1] == "Sedang"):
+        inferensi.append(["Iya", (hasil[id][1] and keluar[id][2])])
+    if (litHasil[0] == "Rendah") and (litKeluar[2] == "Tinggi"):
+        inferensi.append(["Iya", (hasil[id][1] and keluar[id][3])])
+    if (litHasil[1] == "Sedang") and (litKeluar[0] == "Rendah"):
+        inferensi.append(["Tidak", (hasil[id][2] and keluar[id][1])])
+    if (litHasil[1] == "Sedang") and (litKeluar[1] == "Sedang"):
+        inferensi.append(["Mungkin", (hasil[id][2] and keluar[id][2])])
+    if (litHasil[1] == "Sedang") and (litKeluar[2] == "Tinggi"):
+        inferensi.append(["Iya", (hasil[id][2]) and (keluar[id][3])])
+    if (litHasil[2] == "Tinggi") and (litKeluar[0] == "Rendah"):
+        inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][1])])
+    if (litHasil[2] == "Tinggi") and (litKeluar[1] == "Sedang"):
+        inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][2])])
+    if (litHasil[2] == "Tinggi") and (litKeluar[2] == "Tinggi"):
+        inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][3])])
+    return inferensi
+
 #Main Program
+nilaiPenghasilan = []
+nilaiPengeluaran = []
+
+#Mengambil nilai fuzzy Penghasilan
+for i in range(len(excel)):
+    nilai = []
+    nilai.append(excel["Id"][i])
+    nilai.append(penghasilanRendah(excel["Penghasilan"][i]))
+    nilai.append(penghasilanSedang(excel["Penghasilan"][i]))
+    nilai.append(penghasilanTinggi(excel["Penghasilan"][i]))
+    nilaiPenghasilan.append(nilai)
+
+#Mengambil nilai fuzzy Pengeluaran
+for i in range(len(excel)):
+    nilai = []
+    nilai.append(excel["Id"][i])
+    nilai.append(pengeluaranRendah(excel["Pengeluaran"][i]))
+    nilai.append(pengeluaranSedang(excel["Pengeluaran"][i]))
+    nilai.append(pengeluaranTinggi(excel["Pengeluaran"][i]))
+    nilaiPengeluaran.append(nilai)
+
+#Pengaplikasian Inferensi Rules
+defuzzy = []
+for i in range(len(excel)):
+    temp = basedRules(nilaiPenghasilan, nilaiPengeluaran, i)
+    inferensi = iya = mungkin = tidak = []
+    for k in range(len(temp)):
+        if (temp[k][0] == "Iya"):
+            iya.append(temp[k][1])
+        if (te)
+
 # penghasilan = 7.84
 # print("Rendah : ", penghasilanRendah(penghasilan))
 # print("Sedang : ", penghasilanSedang(penghasilan))
