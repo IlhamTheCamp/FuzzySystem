@@ -2,9 +2,6 @@ import matplotlib.pyplot as plot
 import pandas as pd
 import xlsxwriter
 
-#Baca file Excel
-excel = pd.read_excel('Mahasiswa.xls')
-
 # Penghasilan
 h = [0, 5.5, 8, 13, 15.5, 22]
 
@@ -87,48 +84,39 @@ plot.legend()
 
 #Inferensi Rules
 def basedRules(hasil, keluar, id):
-    literasi = ["Rendah", "Sedang", "Tinggi"]
-    litHasil = literasi
-    litKeluar = literasi
     inferensi = []
-    if (litHasil[0] == "Rendah") and (litKeluar[0] == "Rendah"):
-        inferensi.append(["Mungkin", (hasil[id][1] and keluar[id][1])])
-    if (litHasil[0] == "Rendah") and (litKeluar[1] == "Sedang"):
-        inferensi.append(["Iya", (hasil[id][1] and keluar[id][2])])
-    if (litHasil[0] == "Rendah") and (litKeluar[2] == "Tinggi"):
-        inferensi.append(["Iya", (hasil[id][1] and keluar[id][3])])
-    if (litHasil[1] == "Sedang") and (litKeluar[0] == "Rendah"):
-        inferensi.append(["Tidak", (hasil[id][2] and keluar[id][1])])
-    if (litHasil[1] == "Sedang") and (litKeluar[1] == "Sedang"):
-        inferensi.append(["Mungkin", (hasil[id][2] and keluar[id][2])])
-    if (litHasil[1] == "Sedang") and (litKeluar[2] == "Tinggi"):
-        inferensi.append(["Iya", (hasil[id][2]) and (keluar[id][3])])
-    if (litHasil[2] == "Tinggi") and (litKeluar[0] == "Rendah"):
-        inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][1])])
-    if (litHasil[2] == "Tinggi") and (litKeluar[1] == "Sedang"):
-        inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][2])])
-    if (litHasil[2] == "Tinggi") and (litKeluar[2] == "Tinggi"):
-        inferensi.append(["Mungkin", (hasil[id][3]) and (keluar[id][3])])
+
+    inferensi.append(["Tidak", (hasil[id][2] and keluar[id][1])])
+    inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][1])])
+    inferensi.append(["Tidak", (hasil[id][3]) and (keluar[id][2])])
+
+    inferensi.append(["Mungkin", (hasil[id][1] and keluar[id][1])])
+    inferensi.append(["Mungkin", (hasil[id][2] and keluar[id][2])])
+    inferensi.append(["Mungkin", (hasil[id][3]) and (keluar[id][3])])
+
+    inferensi.append(["Iya", (hasil[id][1] and keluar[id][2])])
+    inferensi.append(["Iya", (hasil[id][1] and keluar[id][3])])
+    inferensi.append(["Iya", (hasil[id][2]) and (keluar[id][3])])
+
     return inferensi
 
+#Defuzzy dengan Model Sugeno
 def defuzzification(inferensi):
-    a = ((10+20+30) * inferensi[0]) + ((40+50+60) * inferensi[1]) + ((70+80+90+100) * inferensi[2])
-    b = (3*inferensi[0]) + (3*inferensi[1]) + (4*inferensi[2])
+    a = ((inferensi[0] * 30) + (inferensi[1] * 60) + (inferensi[2] * 100))
+    b = inferensi[0] + inferensi[1] + inferensi[2]
     return a / b
 
-#Plot Kelayakan Model Mamdani
-x = [0,30,40,60,70,100]
-y1 = [1,1,0,0,0,0]
-y2 = [0,0,1,1,0,0]
-y3 = [0,0,0,0,1,1]
-
-plot.plot(x,y1,label="Tidak")
-plot.plot(x,y2,label="Mungkin")
-plot.plot(x,y3,label="Iya")
+#Plot Kelayakan Model Sugeno
+plot.axvline(30, 0, 1, color="red", label='tidak')
+plot.axvline(60, 0, 1, color="green", label='mungkin')
+plot.axvline(100, 0, 1, color="blue", label='iya')
 plot.legend()
 # plot.show()
 
 #Main Program
+#Baca file Excel
+excel = pd.read_excel('Mahasiswa.xls')
+
 nilaiPenghasilan = []
 nilaiPengeluaran = []
 
@@ -154,10 +142,10 @@ for i in range(len(excel)):
 defuzzy = []
 for i in range(len(excel)):
     temp = basedRules(nilaiPenghasilan, nilaiPengeluaran, i)
-    inferensi = []
     iya = []
     mungkin = []
     tidak = []
+    inferensi = []
     for k in range(len(temp)):
         if (temp[k][0] == "Iya"):
             iya.append(temp[k][1])
@@ -168,7 +156,7 @@ for i in range(len(excel)):
     inferensi.append(tidak[0] or tidak[1] or tidak[2])
     inferensi.append(mungkin[0] or mungkin[1] or mungkin[2])
     inferensi.append(iya[0] or iya[1] or iya[2])
-    defuzzy.append([defuzzification(inferensi), i+1])
+    defuzzy.append([defuzzification(inferensi), i + 1])
 
 defuzzy.sort(reverse=True)
 layak = []
